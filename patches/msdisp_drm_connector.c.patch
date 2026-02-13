@@ -1,0 +1,43 @@
+116a117,125
+> #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
+> 	drm_edid_connector_update(connector, msdisp_connector->drm_edid);
+> 	if (msdisp_connector->drm_edid) {
+> 		cnt = drm_edid_connector_add_modes(connector);
+> 		vic_cnt = msdisp_drm_add_modes_by_cea_vic(connector);
+> 		dev_info(connector->dev->dev, "add %d edid modes %d vic modes\n", cnt, vic_cnt);
+> 		return cnt + vic_cnt;
+> 	}
+> #else
+119c128
+<         cnt = drm_add_edid_modes(connector, msdisp_connector->edid);
+---
+> 		cnt = drm_add_edid_modes(connector, msdisp_connector->edid);
+121c130
+<         dev_info(connector->dev->dev, "add %d edid modes %d vic modes\n", cnt, vic_cnt);
+---
+> 		dev_info(connector->dev->dev, "add %d edid modes %d vic modes\n", cnt, vic_cnt);
+123c132,133
+<     }
+---
+> 	}
+> #endif
+184a195,205
+> #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
+>         if (msdisp_connector->drm_edid) {
+>             drm_edid_free(msdisp_connector->drm_edid);
+>         }
+> 
+>         msdisp_connector->drm_edid = drm_edid_read_custom(connector, msdisp_drm_get_edid_block, pipeline);
+>         if (!msdisp_connector->drm_edid) {
+>             DRM_ERROR("get edid failed!\n");
+>             return connector_status_disconnected;
+>         }
+> #else
+193a215
+> #endif
+209a232,234
+> #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
+> 	drm_edid_free(msdisp_conn->drm_edid);
+> #else
+210a236
+> #endif

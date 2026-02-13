@@ -1,0 +1,10 @@
+--- msdisp_drm_drv.c.orig
++++ msdisp_drm_drv.c
+@@ -64,6 +64,9 @@
+ static const struct file_operations msdisp_drm_driver_fops = {
+ 	.owner = THIS_MODULE,
++#ifdef FOP_UNSIGNED_OFFSET
++	.fop_flags = FOP_UNSIGNED_OFFSET,
++#endif
+ 	.open = drm_open,
+ 	.mmap = msdisp_drm_gem_mmap,

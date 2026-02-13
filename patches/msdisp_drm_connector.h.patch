@@ -1,0 +1,14 @@
+21a22,26
+> #include <linux/version.h>
+> 
+> #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
+> struct drm_edid;
+> #else
+22a28
+> #endif
+28a35,37
+> #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
+> 	const struct drm_edid *drm_edid;
+> #else
+29a39
+> #endif

@@ -1,0 +1,6 @@
+136a137,139
+> #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+> void msdisp_platform_device_remove(struct platform_device *pdev);
+> #else
+137a141
+> #endif
