@@ -54,6 +54,43 @@ udevadm info /dev/dri/card1
 
 ## Common Issues
 
+### Cursor disappears when moving between displays
+
+The MS9132 driver does not implement hardware cursor planes. When using
+Wayland (GNOME/Mutter) with multiple GPUs, the cursor can disappear when
+moving from the USB display to a secondary output (e.g., HDMI) on the
+primary GPU.
+
+This happens because Mutter switches from software cursor (on the USB
+display) to hardware cursor (on the primary GPU), but fails to activate
+the cursor plane on the correct CRTC for secondary outputs.
+
+**Symptoms:**
+- Cursor disappears when moving from USB display to HDMI output
+- Cursor works fine moving from USB display to the laptop screen (eDP)
+- Cursor works fine moving between eDP and HDMI directly
+
+**Fix:** Force software cursor rendering for all displays:
+
+```bash
+mkdir -p ~/.config/environment.d/
+echo 'MUTTER_DEBUG_FORCE_SOFTWARE_CURSOR=1' > ~/.config/environment.d/10-mutter-software-cursor.conf
+```
+
+Log out and back in for the change to take effect. The performance cost is
+negligible.
+
+**Verify:**
+```bash
+# Check planes on USB display (no cursor plane = expected):
+sudo cat /sys/kernel/debug/dri/1/state | grep -E 'plane|cursor'
+# Only "plane-0", "plane-1", "plane-2" -- no "cursor" entries
+
+# Check planes on primary GPU (has cursor planes):
+sudo cat /sys/kernel/debug/dri/0/state | grep -E 'plane|cursor'
+# Shows "cursor A", "cursor B", "cursor C"
+```
+
 ### Module loads but device doesn't work
 
 1. Check `open()` works: `python3 -c 'import os; os.open("/dev/dri/card1", os.O_RDWR)'`

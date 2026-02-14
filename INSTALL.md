@@ -1,10 +1,10 @@
-# Installation Guide - MS9132 Driver for Kernel 6.10+
+# Installation Guide - MS9132 Driver Patches
 
 ## Prerequisites
 
 ```bash
 # Check kernel version
-uname -r   # Should be 6.10 or newer
+uname -r
 
 # Install build dependencies
 sudo apt install linux-headers-$(uname -r) build-essential
@@ -12,23 +12,26 @@ sudo apt install linux-headers-$(uname -r) build-essential
 
 ## Step 1: Get the official driver source
 
-Download from [MacroSilicon](http://www.macrosilicon.com:9080/download/USBDisplay/Linux/SourceCode/MS91xx_Linux_Drm_SourceCode_V3.0.1.3.zip) and extract.
+Download the official MS9132 driver source (v3.0.1.3) from [MacroSilicon](http://en.macrosilicon.com/info.asp?base_id=2&third_id=72) and extract it. The zip contains a folder with `drm/` and `usb_hal/` subdirectories.
 
 ## Step 2: Apply patches
 
+Check the [README](README.md) to see which patches you need for your kernel version.
+
 ```bash
-cd ms9132-official/drm
-for p in /path/to/patches/*.patch; do
-    patch -p0 < "$p"
-done
+# From the driver source root (where drm/ and usb_hal/ are):
+cd drm
+for p in /path/to/patches/msdisp_*.patch; do patch -p0 < "$p"; done
+cd ../usb_hal
+for p in /path/to/patches/usb_hal_*.patch; do patch -p0 < "$p"; done
+cd ..
 ```
 
-Verify no errors. Each patch uses `#if LINUX_VERSION_CODE` guards, so they are safe for any kernel version.
+Verify no errors. Each patch uses `#if LINUX_VERSION_CODE` guards, so they are safe for any kernel version. You can apply all patches regardless of your kernel.
 
 ## Step 3: Compile
 
 ```bash
-cd ms9132-official
 make clean && make
 ```
 
@@ -100,7 +103,7 @@ At reboot, in the blue MOK Manager screen:
 sudo reboot
 ```
 
-**Do NOT create any X11 xorg.conf.d configuration for the USB display.** X.org auto-detects the second GPU. Explicit Device sections cause GDM to crash and you will lose your primary display.
+**Do NOT create any X11 xorg.conf.d configuration for the USB display.** X.org auto-detects the second GPU. Explicit Device sections cause GDM to crash.
 
 ### Verification
 
@@ -125,7 +128,7 @@ ls /sys/class/drm/card1-*
 lsusb | grep 534d
 # Expected: Bus xxx Device xxx: ID 534d:9132
 
-# xrandr (display may be :0 or :1 depending on your setup)
+# xrandr
 xrandr --listproviders
 # Expected: 2 providers (your GPU + msdisp)
 ```
@@ -133,7 +136,7 @@ xrandr --listproviders
 ## Recompile after kernel update
 
 ```bash
-cd ms9132-official
+cd /path/to/patched-driver-source
 make clean && make
 
 KVER=$(uname -r)
@@ -162,8 +165,9 @@ sudo reboot
 | xrandr missing HDMI-A-2 | logind could not give fd to Xorg | Check Xorg log |
 | Empty EDID with USB connected | Patch 3 incorrect or USB not detected | `lsusb \| grep 534d` |
 | Compiles but fails to load | Kernel version changed | Recompile with `make clean && make` |
-| GDM crashes / lost primary display | xorg.conf.d with explicit Device sections | Remove the config and restart GDM |
+| GDM crashes | xorg.conf.d with explicit Device sections | Remove the config and restart GDM |
 | `glamor initialization failed` | Normal for USB display | Not an error, uses software rendering |
 | `usb hal is null` in dmesg | USB adapter unplugged | Normal behavior on disconnect |
+| dmesg flooded with `fb id:` | Missing Patch 6 (log spam fix) | Recompile with Patch 6 applied |
 
 For detailed investigation notes, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).

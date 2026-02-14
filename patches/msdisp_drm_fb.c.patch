@@ -1,0 +1,9 @@
+--- msdisp_drm_fb.c.orig
++++ msdisp_drm_fb.c
+@@ -186,7 +186,7 @@
+ 	}
+
+-	dev_info(dev->dev, "fb id:0x%x format:0x%x handle:0x%x width:%d height:%d pitch:%d\n",  \
++	dev_dbg(dev->dev, "fb id:0x%x format:0x%x handle:0x%x width:%d height:%d pitch:%d\n",  \
+ 		mode_cmd->fb_id, mode_cmd->pixel_format, mode_cmd->handles[0], mode_cmd->width, mode_cmd->height, mode_cmd->pitches[0]);
+
