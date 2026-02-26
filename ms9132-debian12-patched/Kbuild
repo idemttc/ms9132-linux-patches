@@ -1,0 +1,11 @@
+USB_HAL_OBJS := usb_hal/hal_adaptor.o usb_hal/ms9132.o usb_hal/usb_hal_interface.o usb_hal/usb_hal_sysfs.o usb_hal/usb_hal_thread.o
+
+usbdisp_drm-y := drm/msdisp_plat_drv.o drm/msdisp_plat_dev.o drm/msdisp_drm_drv.o drm/msdisp_drm_modeset.o drm/msdisp_drm_gem.o \
+	drm/msdisp_drm_fb.o drm/msdisp_drm_encoder.o drm/msdisp_drm_connector.o drm/msdisp_drm_interface.o drm/msdisp_drm_sysfs.o \
+	drm/msdisp_common_util.o drm/msdisp_drm_mode.o
+
+usbdisp_usb-y := drm/msdisp_usb_drv.o drm/ms9132_hal.o $(USB_HAL_OBJS)
+
+obj-m := usbdisp_drm.o usbdisp_usb.o
+
+ccflags-y := -isystem include/drm -I$(src)/usb_hal $(CFLAGS)

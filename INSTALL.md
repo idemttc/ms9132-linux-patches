@@ -133,7 +133,43 @@ xrandr --listproviders
 # Expected: 2 providers (your GPU + msdisp)
 ```
 
-## Recompile after kernel update
+## Automatic recompilation with DKMS (recommended)
+
+DKMS automatically recompiles the driver whenever a new kernel is installed via `apt`.
+
+```bash
+sudo apt install dkms
+
+# Copy source to DKMS tree
+sudo cp -r /path/to/patched-driver-source /usr/src/ms9132-1.0
+
+# Register, build, and install
+sudo dkms add ms9132/1.0
+sudo dkms build ms9132/1.0
+sudo dkms install ms9132/1.0
+```
+
+Both pre-patched source trees (`ms9132-debian12-patched/` and `ms9132-debian13-patched/`) include a `dkms.conf` ready to use.
+
+After this, kernel updates via `apt` will automatically recompile and install the modules. No manual intervention needed.
+
+To check DKMS status:
+
+```bash
+sudo dkms status
+# Expected: ms9132/1.0, <kernel-version>, x86_64: installed
+```
+
+To remove DKMS registration:
+
+```bash
+sudo dkms remove ms9132/1.0 --all
+sudo rm -rf /usr/src/ms9132-1.0
+```
+
+## Manual recompilation after kernel update
+
+If you prefer not to use DKMS:
 
 ```bash
 cd /path/to/patched-driver-source
@@ -164,7 +200,7 @@ sudo reboot
 | `logind: failed to take device` | Consequence of EINVAL on open | Fix the open issue first |
 | xrandr missing HDMI-A-2 | logind could not give fd to Xorg | Check Xorg log |
 | Empty EDID with USB connected | Patch 3 incorrect or USB not detected | `lsusb \| grep 534d` |
-| Compiles but fails to load | Kernel version changed | Recompile with `make clean && make` |
+| Compiles but fails to load | Kernel version changed | Recompile or use DKMS (see above) |
 | GDM crashes | xorg.conf.d with explicit Device sections | Remove the config and restart GDM |
 | `glamor initialization failed` | Normal for USB display | Not an error, uses software rendering |
 | `usb hal is null` in dmesg | USB adapter unplugged | Normal behavior on disconnect |
